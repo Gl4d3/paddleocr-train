@@ -1,0 +1,45 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+.ipynb_checkpoints/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Output and temporary files
+inference/
+inference_results/
+output/
+log/
+*.log
+*.DS_Store
+*.vs
+*.user
+*~
+*.vscode
+*.idea
+
+# Build and distribution
+build/
+dist/
+paddleocr.egg-info/
+
+# Deployment-related folders (not needed for training)
+/deploy/
+/applications/
+
+# Dataset folders (to avoid GitHub size limits)
+/dataset/
+/train_data/
+
+# Benchmark folders (not essential for training)
+/benchmark/
+
+# Editor and formatting files
+.clang-format
+.clang_format.hook
+
+# TIPC web-related files
+test_tipc/web/models/
+test_tipc/web/node_modules/
