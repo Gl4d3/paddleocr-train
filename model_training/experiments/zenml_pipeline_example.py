@@ -24,7 +24,7 @@ from mlflow.tracking import MlflowClient
 def setup_zenml():
     """Initialize ZenML if not already initialized"""
     try:
-        client = Client()
+        client = Client() # this is the client object that allows you to interact with the ZenML server
         if not client.active_stack:
             print("No active ZenML stack found. Please run 'zenml init' first.")
             sys.exit(1)

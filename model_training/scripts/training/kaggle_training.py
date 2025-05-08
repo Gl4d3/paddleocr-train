@@ -58,39 +58,52 @@ def setup_mlflow():
 
 # Ensure we're in the PaddleOCR root directory
 def setup_environment():
-    # On Kaggle, get repository code if needed
-    if os.path.exists('/kaggle/input/github-paddleocr-training'):
+    """
+    Setup the training environment and ensure correct directory structure.
+    Handles both Kaggle and local environments.
+    """
+    # Get the absolute path of the current script
+    current_script = os.path.abspath(__file__)
+    
+    # Determine if we're in a Kaggle environment
+    is_kaggle = os.path.exists('/kaggle')
+    
+    if is_kaggle:
+        print("Detected Kaggle environment")
+        # In Kaggle, we should be in /kaggle/working
         os.chdir('/kaggle/working')
-        if not os.path.exists('paddleocr'):
-            print("Copying PaddleOCR code from dataset...")
-            subprocess.run('cp -r /kaggle/input/github-paddleocr-training paddleocr', shell=True)
-            os.chdir('paddleocr')
+        
+        # Check if we have the paddleocr-train repository
+        if os.path.exists('paddleocr-train'):
+            os.chdir('paddleocr-train')
+            print("Using paddleocr-train repository")
+        else:
+            # Try to get from dataset
+            if os.path.exists('/kaggle/input/github-paddleocr-training'):
+                print("Copying PaddleOCR code from dataset...")
+                subprocess.run('cp -r /kaggle/input/github-paddleocr-training paddleocr', shell=True)
+                os.chdir('paddleocr')
+            else:
+                raise RuntimeError("Could not find PaddleOCR code in Kaggle environment")
     else:
-        # Assuming we're in the model_training/notebooks directory
-        ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname("__file__"), "../.."))
-        os.chdir(ROOT_DIR)
+        # Local environment - navigate to PaddleOCR root
+        # Go up from model_training/scripts/training to PaddleOCR root
+        root_dir = os.path.abspath(os.path.join(os.path.dirname(current_script), "../../../.."))
+        os.chdir(root_dir)
     
     print(f"Working directory: {os.getcwd()}")
     
-    # Check if we are in a Kaggle environment with paddleocr-train folder
-    if os.path.exists('/kaggle') and os.path.basename(os.getcwd()) == 'paddleocr-train':
-        print("Detected Kaggle environment with paddleocr-train repository.")
-        # In this case, we should already have ppocr directory
-        if not os.path.exists('ppocr'):
-            print("ERROR: The ppocr directory is missing from the repository.")
-            print("Current directory contents:")
-            subprocess.run('ls -la', shell=True)
-            sys.exit(1)
-    else:
-        # Check if key directories exist for standard PaddleOCR
-        assert os.path.exists('ppocr'), "Not in PaddleOCR root directory!"
+    # Verify essential directories exist
+    required_dirs = ['ppocr', 'tools']
+    missing_dirs = [d for d in required_dirs if not os.path.exists(d)]
+    if missing_dirs:
+        raise RuntimeError(f"Missing required directories: {', '.join(missing_dirs)}")
     
-    assert os.path.exists('tools'), "PaddleOCR tools directory not found!"
-    
-    # Create necessary directories
-    os.makedirs(args.det_dataset_dir, exist_ok=True)
-    os.makedirs(args.rec_dataset_dir, exist_ok=True)
-    os.makedirs(args.train_data_dir, exist_ok=True)
+    # Create dataset directories with absolute paths
+    for dir_path in [args.det_dataset_dir, args.rec_dataset_dir, args.train_data_dir]:
+        abs_path = os.path.abspath(dir_path)
+        os.makedirs(abs_path, exist_ok=True)
+        print(f"Ensured directory exists: {abs_path}")
 
 # Prepare training data from Kaggle dataset if needed
 def prepare_training_data():

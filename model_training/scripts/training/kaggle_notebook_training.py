@@ -4,59 +4,80 @@
 """
 PaddleOCR Training on Kaggle
 This file contains cell markers to help create a notebook in the Kaggle UI.
+Copy each cell's content into your Kaggle notebook.
 """
 
-# Cell 1: Check GPU Availability
-"""
-# Check if GPU is available
-"""
-# !nvidia-smi
-
-# Cell 2: Install Required Packages
+# Cell 1: Install Dependencies
 """
 # Install required packages
 """
-# !pip install -q paddlepaddle-gpu==2.4.2
-# !pip install -q mlflow paddleocr visualdl opencv-python lmdb imgaug pyclipper scikit-image
+# !pip install -q -r /kaggle/input/paddleocr-training-data/requirements.txt
+# !pip install -q paddlepaddle-gpu==2.4.2 paddlepaddle==2.4.2 paddleocr>=2.6.1.3
+# !pip install -q mlflow>=2.3.0 visualdl>=2.5.0 opencv-python>=4.6.0 opencv-contrib-python>=4.6.0
+# !pip install -q lmdb>=1.3.0 imgaug>=0.4.0 pyclipper>=1.2.1 scikit-image>=0.19.0
+
+# Cell 2: Setup Environment and Check GPU
+"""
+# Setup environment and check GPU availability
+"""
+import os
+import sys
+from pathlib import Path
+
+# Ensure we're in the Kaggle working directory
+os.chdir('/kaggle/working')
+
+# Check GPU availability
+import paddle
+print(f"GPU available: {paddle.device.is_compiled_with_cuda()}")
+print(f"Paddle version: {paddle.__version__}")
+
+# Define paths
+WORKING_DIR = Path('/kaggle/working')
+REPO_DIR = WORKING_DIR / 'paddleocr-train'
+DATASET_DIR = WORKING_DIR / 'dataset'
+TRAIN_DATA_DIR = WORKING_DIR / 'train_data'
+MLRUNS_DIR = WORKING_DIR / 'mlruns'
+
+# Create necessary directories
+for dir_path in [REPO_DIR, DATASET_DIR, TRAIN_DATA_DIR, MLRUNS_DIR]:
+    dir_path.mkdir(parents=True, exist_ok=True)
+
+print(f"Working directory: {WORKING_DIR}")
+print(f"Repository directory: {REPO_DIR}")
+print(f"Dataset directory: {DATASET_DIR}")
+print(f"Training data directory: {TRAIN_DATA_DIR}")
+print(f"MLflow directory: {MLRUNS_DIR}")
 
 # Cell 3: Clone Repository
 """
-# Clone the repository directly instead of using dataset
-# This is simpler than creating a dataset from the repo
+# Clone the repository
 """
-import os
-
 # Check if repository already exists
-if not os.path.exists('paddleocr-train'):
-    # !git clone https://github.com/Gl4d3/paddleocr-train.git
-    # %cd paddleocr-train
-    pass
+if not os.path.exists(str(REPO_DIR)):
+    print(f"Cloning repository to {REPO_DIR}")
+    # !git clone https://github.com/Gl4d3/paddleocr-train.git {REPO_DIR}
 else:
-    # %cd paddleocr-train
-    # Pull latest changes
+    print(f"Repository exists at {REPO_DIR}")
+    os.chdir(str(REPO_DIR))
     # !git pull
-    pass
 
 # Check directory structure
 # !ls -la
 
-# Cell 4: Set Up MLflow Tracking
+# Cell 4: Set Up MLflow
 """
-# Set up MLflow for experiment tracking
+# Set up MLflow tracking
 """
-import os
 import mlflow
 from mlflow.tracking import MlflowClient
 
-# Set up MLflow locally (you can change this to a remote server if needed)
-os.makedirs('mlruns', exist_ok=True)
-
-# Use Python's os.getcwd() instead of shell $(pwd)
-mlflow_tracking_uri = f'file://{os.getcwd()}/mlruns'
+# Set up MLflow with absolute path
+mlflow_tracking_uri = f"file://{MLRUNS_DIR}"
 mlflow.set_tracking_uri(mlflow_tracking_uri)
 os.environ['MLFLOW_TRACKING_URI'] = mlflow_tracking_uri
 
-# Create the experiment
+# Create experiment
 experiment_name = 'paddleocr_training'
 mlflow.set_experiment(experiment_name)
 
@@ -65,41 +86,41 @@ print(f"MLflow experiment: {experiment_name}")
 
 # Cell 5: Prepare Training Data
 """
-# Check and prepare training data
+# Prepare training data
 """
-# Check if training data is available
-# !mkdir -p dataset/det_dataset_1/images dataset/rec_dataset_1/images train_data/meter_detection
+# Create dataset directories
+det_dataset = DATASET_DIR / 'det_dataset_1'
+rec_dataset = DATASET_DIR / 'rec_dataset_1'
+train_data = TRAIN_DATA_DIR / 'meter_detection'
 
-# If you have uploaded data to Kaggle datasets, use this:
+for dir_path in [det_dataset, rec_dataset, train_data]:
+    dir_path.mkdir(parents=True, exist_ok=True)
+
+# Link data from Kaggle dataset if available
 if os.path.exists('/kaggle/input/paddleocr-training-data'):
     print("Found training data dataset")
-    # !ln -sf /kaggle/input/paddleocr-training-data/det_dataset_1/images/* dataset/det_dataset_1/images/
-    # !cp /kaggle/input/paddleocr-training-data/det_dataset_1/*.txt dataset/det_dataset_1/
-    
-    # !ln -sf /kaggle/input/paddleocr-training-data/rec_dataset_1/images/* dataset/rec_dataset_1/images/
-    # !cp /kaggle/input/paddleocr-training-data/rec_dataset_1/*.txt dataset/rec_dataset_1/
+    # !ln -sf /kaggle/input/paddleocr-training-data/det_dataset_1/images/* {det_dataset}/images/
+    # !cp /kaggle/input/paddleocr-training-data/det_dataset_1/*.txt {det_dataset}/
+    # !ln -sf /kaggle/input/paddleocr-training-data/rec_dataset_1/images/* {rec_dataset}/images/
+    # !cp /kaggle/input/paddleocr-training-data/rec_dataset_1/*.txt {rec_dataset}/
 else:
     print("No uploaded dataset found. You need to add your own training data.")
-    # You could download sample data here if needed
 
 # Cell 6: Run Training
 """
-# Run the training pipeline
+# Run training pipeline
 """
-# Set training parameters
-det_dataset_dir = 'dataset/det_dataset_1'
-rec_dataset_dir = 'dataset/rec_dataset_1'
-train_data_dir = 'train_data/meter_detection'
-max_det_epochs = 50  # Reduced for testing, increase for production
-max_rec_epochs = 100  # Reduced for testing, increase for production
+# Training parameters
+max_det_epochs = 50
+max_rec_epochs = 100
 
-# Define command with proper Python string formatting
-cmd = f"""python model_training/scripts/training/kaggle_training.py \\
+# Define command with absolute paths
+cmd = f"""python {REPO_DIR}/model_training/scripts/training/kaggle_training.py \\
     --exp_name='paddleocr_training' \\
     --tracking_uri='{mlflow_tracking_uri}' \\
-    --det_dataset_dir='{det_dataset_dir}' \\
-    --rec_dataset_dir='{rec_dataset_dir}' \\
-    --train_data_dir='{train_data_dir}' \\
+    --det_dataset_dir='{det_dataset}' \\
+    --rec_dataset_dir='{rec_dataset}' \\
+    --train_data_dir='{train_data}' \\
     --gpu_ids='0' \\
     --max_det_epochs={max_det_epochs} \\
     --max_rec_epochs={max_rec_epochs} \\
@@ -111,39 +132,38 @@ print(f"Training command:\n{cmd}")
 # Execute the training
 # !$cmd
 
-# Cell 7: Package Results for Download
+# Cell 7: Package Results
 """
-# Package trained models and metrics for download
+# Package training results
 """
-# !mkdir -p saved_results
+# Create results directory
+results_dir = WORKING_DIR / 'saved_results'
+results_dir.mkdir(exist_ok=True)
 
 # Copy trained models
-# !cp -r model_training/det_train/output saved_results/detection_models
-# !cp -r model_training/rec_train/output saved_results/recognition_models
+# !cp -r {REPO_DIR}/model_training/det_train/output {results_dir}/detection_models
+# !cp -r {REPO_DIR}/model_training/rec_train/output {results_dir}/recognition_models
 
 # Package MLflow data
-# !cp -r mlruns saved_results/mlflow_logs
+# !cp -r {MLRUNS_DIR} {results_dir}/mlflow_logs
 
-# Create zip archives for easy download
-# !zip -r trained_models.zip saved_results/detection_models saved_results/recognition_models
-# !zip -r mlflow_logs.zip saved_results/mlflow_logs
+# Create zip archives
+# !zip -r {WORKING_DIR}/trained_models.zip {results_dir}/detection_models {results_dir}/recognition_models
+# !zip -r {WORKING_DIR}/mlflow_logs.zip {results_dir}/mlflow_logs
 
 print("Training artifacts ready for download:")
-print(" - trained_models.zip - Trained detection and recognition models")
-print(" - mlflow_logs.zip - MLflow logs and metrics")
+print(f" - {WORKING_DIR}/trained_models.zip - Trained models")
+print(f" - {WORKING_DIR}/mlflow_logs.zip - MLflow logs")
 
-# Cell 8: View Training Results and Metrics
+# Cell 8: View Results
 """
-# Display training results and metrics
+# Display training results
 """
-import mlflow
-from mlflow.tracking import MlflowClient
-
 client = MlflowClient()
 experiment = client.get_experiment_by_name("paddleocr_training")
+
 if experiment:
     runs = client.search_runs(experiment_ids=[experiment.experiment_id])
-    
     for run in runs:
         print(f"Run ID: {run.info.run_id}")
         print(f"Status: {run.info.status}")
