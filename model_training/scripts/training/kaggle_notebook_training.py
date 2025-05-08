@@ -50,8 +50,11 @@ from mlflow.tracking import MlflowClient
 
 # Set up MLflow locally (you can change this to a remote server if needed)
 os.makedirs('mlruns', exist_ok=True)
-# mlflow.set_tracking_uri('file://$(pwd)/mlruns')
-# os.environ['MLFLOW_TRACKING_URI'] = 'file://$(pwd)/mlruns'
+
+# Use Python's os.getcwd() instead of shell $(pwd)
+mlflow_tracking_uri = f'file://{os.getcwd()}/mlruns'
+mlflow.set_tracking_uri(mlflow_tracking_uri)
+os.environ['MLFLOW_TRACKING_URI'] = mlflow_tracking_uri
 
 # Create the experiment
 experiment_name = 'paddleocr_training'
@@ -90,10 +93,10 @@ train_data_dir = 'train_data/meter_detection'
 max_det_epochs = 50  # Reduced for testing, increase for production
 max_rec_epochs = 100  # Reduced for testing, increase for production
 
-# Define command
-cmd = """python model_training/scripts/training/kaggle_training.py \\
+# Define command with proper Python string formatting
+cmd = f"""python model_training/scripts/training/kaggle_training.py \\
     --exp_name='paddleocr_training' \\
-    --tracking_uri='file://$(pwd)/mlruns' \\
+    --tracking_uri='{mlflow_tracking_uri}' \\
     --det_dataset_dir='{det_dataset_dir}' \\
     --rec_dataset_dir='{rec_dataset_dir}' \\
     --train_data_dir='{train_data_dir}' \\

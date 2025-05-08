@@ -72,8 +72,19 @@ def setup_environment():
     
     print(f"Working directory: {os.getcwd()}")
     
-    # Check if key directories exist
-    assert os.path.exists('ppocr'), "Not in PaddleOCR root directory!"
+    # Check if we are in a Kaggle environment with paddleocr-train folder
+    if os.path.exists('/kaggle') and os.path.basename(os.getcwd()) == 'paddleocr-train':
+        print("Detected Kaggle environment with paddleocr-train repository.")
+        # In this case, we should already have ppocr directory
+        if not os.path.exists('ppocr'):
+            print("ERROR: The ppocr directory is missing from the repository.")
+            print("Current directory contents:")
+            subprocess.run('ls -la', shell=True)
+            sys.exit(1)
+    else:
+        # Check if key directories exist for standard PaddleOCR
+        assert os.path.exists('ppocr'), "Not in PaddleOCR root directory!"
+    
     assert os.path.exists('tools'), "PaddleOCR tools directory not found!"
     
     # Create necessary directories
