@@ -15,3 +15,6 @@ albumentations
 # to be compatible with albumentations
 albucore
 packaging
+
+paddlepaddle-gpu
+paddlepaddle

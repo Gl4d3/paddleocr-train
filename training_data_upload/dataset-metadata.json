@@ -1,0 +1,10 @@
+{
+  "title": "Dataset: paddleocr-training-data",
+  "id": "username/paddleocr-training-data",
+  "licenses": [
+    {
+      "name": "MIT"
+    }
+  ],
+  "description": "Training data for PaddleOCR meter reading models"
+}
