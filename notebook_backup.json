@@ -106,7 +106,7 @@
     "if not os.path.exists(train_label) or not os.path.exists(test_label):\n",
     "    print(\"Training data not found. Need to prepare from detection dataset.\")\n",
     "    prep_cmd = f\"\"\"\n",
-    "    python model_training/det_train/scripts/convert_dataset.py \\\n",
+    "    python tools/train_val_split.py \\\n",
     "        --dataset_dir={det_dataset_dir} \\\n",
     "        --output_dir={train_data_dir} \\\n",
     "        --train_ratio=0.8\n",

@@ -32,7 +32,26 @@ There are multiple ways to train the OCR models:
 
 ### 1. Local Training using Scripts
 
-The most direct approach using the training scripts:
+#### Using the streamlined local training pipeline (Recommended)
+
+The simplest approach using our new streamlined scripts:
+
+```bash
+# Validate datasets first
+python model_training/scripts/training/validate_dataset.py
+
+# Run the complete pipeline
+python model_training/scripts/training/local_training.py
+
+# Or use the convenience bash/shell script that handles both steps
+./model_training/scripts/training/run_training_pipeline.sh
+```
+
+These scripts focus purely on model training without data manipulation, assuming datasets are already prepared.
+
+#### Using the Kaggle training scripts 
+
+The original approach:
 
 ```bash
 # For detection model training

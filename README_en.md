@@ -29,7 +29,7 @@ This repository contains a customized implementation of PaddleOCR with enhanced 
 ### 1. Local Training
 
 ```bash
-# For detection model training
+# For detection model trainingp
 python model_training/scripts/training/kaggle_training.py --det_only
 
 # For recognition model training

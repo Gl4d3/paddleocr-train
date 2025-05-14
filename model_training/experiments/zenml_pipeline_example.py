@@ -58,10 +58,9 @@ def prepare_data(
     if not os.path.exists(train_label) or not os.path.exists(test_label):
         print("Preparing training data...")
         prep_cmd = f"""
-        python tools/train_val_split.py \
+        python model_training/det_train/scripts/convert_dataset.py \
             --dataset_dir={det_dataset_dir} \
-            --output_dir={train_data_dir} \
-            --train_ratio=0.8
+            --output_dir={train_data_dir}
         """
         subprocess.run(prep_cmd, shell=True)
     

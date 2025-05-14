@@ -134,10 +134,9 @@ def prepare_detection_data():
     if not os.path.exists(train_label) or not os.path.exists(test_label):
         print("Training data not found. Preparing from detection dataset.")
         prep_cmd = f"""
-        python tools/train_val_split.py \
+        python model_training/det_train/scripts/convert_dataset.py \
             --dataset_dir={args.det_dataset_dir} \
-            --output_dir={args.train_data_dir} \
-            --train_ratio=0.8
+            --output_dir={args.train_data_dir}
         """
         print(f"Running: {prep_cmd}")
         subprocess.run(prep_cmd, shell=True)
